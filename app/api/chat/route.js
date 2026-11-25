@@ -38,7 +38,7 @@ export async function POST(req) {
     }));
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+      model: "gemini-3.5-flash-lite",
       contents,
       config: {
         systemInstruction: SKENARIO_PASIEN,
