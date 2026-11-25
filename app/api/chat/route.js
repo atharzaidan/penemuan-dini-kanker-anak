@@ -22,10 +22,17 @@ Aturan main:
 
 export async function POST(req) {
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { error: "GEMINI_API_KEY belum terbaca di server Vercel." },
+        { status: 500 }
+      );
+    }
+
     const { messages } = await req.json();
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    const contents = messages.map((m) => ({
+    const contents = (messages || []).map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.text }],
     }));
@@ -39,8 +46,12 @@ export async function POST(req) {
       },
     });
 
-    return NextResponse.json({ reply: response.text });
+    return NextResponse.json({ reply: response.text || "Tidak ada balasan dari model." });
   } catch (error) {
-    return NextResponse.json({ error: "Maaf, terjadi gangguan koneksi." }, { status: 500 });
+    console.error("Chat API error:", error);
+    return NextResponse.json(
+      { error: `Detail error: ${error?.message || String(error)}` },
+      { status: 500 }
+    );
   }
 }
